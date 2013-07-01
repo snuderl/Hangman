@@ -1,0 +1,247 @@
+* {
+  margin: 0px;
+  padding: 0px;
+  font-family: Verdana, sans-serif;
+}
+html, body {
+  height: 100%;
+}
+p {
+  margin-bottom: 1em;
+  text-align: justify;
+  font-size: 14px;
+}
+a, a:visited {
+  color: blue;
+}
+input[type='text'] {
+  font-size: 18px;
+  color: #555;
+}
+input[type='button'] {
+  padding: 2px;
+}
+#platno {
+  width: 750px;
+  border-left: solid 1px silver;
+  border-right: solid 1px silver;
+  margin: 0px auto;
+  box-shadow: 1px 1px 5px silver;
+  min-height: 100%;
+  background: url('../img/sum.png');
+  background-color: #e1e2e3;
+}
+#navodila {
+  margin-bottom: 20px;
+  padding: 10px 10px;
+}
+#altNavodila {
+  padding-left: 10px;
+  font-size: 12px;
+  margin-bottom: 10px;
+  display: none;
+}
+h1 {
+  display: block;
+  padding: 20px 0px;
+  text-align: center;
+}
+
+
+
+h2 {
+  display: block;
+  padding: 10px 0px;
+  text-align: center;
+  color: #444;
+}
+h2#runda {
+  color: #0f6d39;
+  font-size: 18px;
+}
+
+#pPrijava {
+  text-align: center;
+  border-top: solid 1px silver;
+  border-bottom: solid 1px silver;
+  padding: 0px 10px;
+  background: url('../img/sum.png');
+  background-color: #ddf;
+  height: 100%;
+  position: relative;
+}
+#pPrijava div {
+  margin-bottom: 3em;
+}
+#localStats {
+  display: block;
+  text-align: center;
+  margin-top: 10em;
+}
+#pIgra {
+  background: url('../img/sum.png');
+  background-color: #dfd;
+  border-top: solid 1px silver;
+  border-bottom: solid 1px silver;
+  height: 100%;
+}
+#igralci {
+  width: 100%;
+  border-bottom: solid 1px #7ac778;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+#igralci th {
+  color: #0f6d39;
+  border-bottom: solid 1px #7ac778;
+  text-align: left;
+  padding: 4px 0px;
+}
+#igralci td {
+  color: #0f6d39;
+  padding: 4px 0px;
+}
+#igralci th:first-child, #igralci td:first-child {
+  padding-left: 10px;
+  width: 200px;
+}
+#igralci th:last-child, #igralci td:last-child {
+  width: 150px;
+}
+.krogec {
+  background-color: #0f6d39;
+  width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  margin: 2px 0px 0px 16px;
+}
+#pIgraID {
+  margin-top: 40px;
+  padding: 10px 10px;
+  text-align: center;
+  background: url('../img/sum.png');
+  background-color: #dfd;
+}
+#igraID {
+  font: bold 38px monospace;
+  color: gray;
+  margin: 30px 0px;
+}
+
+
+#pBeseda {
+  margin: 40px 0px;
+  text-align: center;
+  font-size: 25px;
+}
+.crka, .crkaPresledek {
+  display: inline-block;
+  border: solid 1px silver;
+  width: 26px;
+  height: 1.4em;
+  margin: 20px 2px;
+  text-transform: uppercase;
+  font: bold 26px Verdana, sans-serif;
+  background-color: white;
+}
+#pVnos, #pVnosOff, #pKonec {
+  padding: 10px;
+}
+#pVnos div {
+  color: gray;
+  font-size: 14px;
+}
+.crkaPresledek {
+  border: none;
+  background-color: inherit;
+}
+#status {
+  background: url('../img/sum.png');
+  background-color: #fee996;
+  border-bottom: solid 1px silver;
+  padding: 10px 10px;
+  color: #403300;
+}
+
+@media screen and (max-height: 750px) and (min-height: 600px){
+    h1{
+        font-size:18px;
+    }
+    p {
+        font-size: 12px;
+    }
+
+    #vsebina {
+        height: 400px;
+    }h2 {
+         font-size: 16px;
+     }
+     h1{
+         padding: 10px;
+     }
+    #status {
+        padding: 5px 5px;
+    }
+    #pVnos, #pVnosOff, #pKonec {
+        padding: 5px;
+    }
+    #pIgraID {
+        margin-top: 20px;
+        padding: 5px 5px;
+    }
+    #pPrijava {
+        padding: 0px 5px;
+    }
+}
+@media screen and (min-height: 750px){
+    #vsebina {
+        height: 450px;
+
+    }
+    p {
+        font-size: 18px;
+    }
+    h2 {
+        font-size: 18px;
+    }
+
+}
+@media screen and (max-height: 600px){
+    #pIgraID {
+        margin-top: 20px;
+        padding: 5px 5px;
+    }
+    #pVnos, #pVnosOff, #pKonec {
+        padding: 5px;
+    }
+    h1{
+        padding: 10px;
+    }
+    #vsebina {
+        height: 350px;
+
+    }
+    p {
+        font-size: 10px;
+    }
+    h1{
+        font-size:16px;
+    }
+    h2 {
+         font-size: 14px;
+    }
+
+    #navodila {
+        display: none;
+    }
+    #altNavodila {
+        display: block;
+    }
+    #status {
+             padding: 5px 5px;
+         }
+
+    #pPrijava {
+        padding: 0px 5px;
+    }
+}

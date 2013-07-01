@@ -1,0 +1,342 @@
+<!DOCTYPE html >
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>STV6</title>
+  <link rel="stylesheet" type="text/css" href="css/main.css" />
+  <script type="text/javascript" src="js/jquery.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/knockout-2.2.1.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io.connect("http://mysterious-springs-4464.herokuapp.com");
+
+
+        var gameViewModel = {
+            self: this,
+
+            jazInt: ko.observable(0),
+            naPoteziInt: ko.observable(0),
+            localStorage: typeof(Storage)!=="undefined",
+            username: 0,
+            beseda: null,
+            localStats: ko.observable(),
+
+            //elementi strani
+
+            firstPage: ko.observable(true),
+            gamePage: ko.observable(false),
+            playing: ko.observable(false),
+            vnos: ko.observable(false),
+            beseda: ko.observable(false),
+            konec: ko.observable(false),
+            pripravljeni: ko.observable(false),
+            status: ko.observable("Začnite novo igro ali se pridružite obstoječi."),
+
+            id: ko.observable("prazno"),
+            igraId: ko.observable("xxx"),
+            players: ko.observableArray( ),
+            uporabljene: ko.observable(""),
+
+            zacni: function(){
+                if(this.players().length > 1){
+                    socket.emit("starting-game",{});
+                }
+                else{
+                    alert("Počakajte ostale igralce.");
+                }
+            },
+
+            posljiCrko: function(){
+                var input = $("#vnos").val();
+                if(/^[a-zA-ZčžšČŽŠ\s]+$/.test(input)){
+                    $("#vnos").val("");
+                    if(input.length==0){
+                        alert("Nepravilen vnos");
+                    }
+                    else{
+                        socket.emit("vnos",{vnos:input,name:gameViewModel.username});
+                    }
+                }
+                else{
+                    alert("Napačen vnos.");
+                }
+            },
+
+            exit: function(){
+                socket.emit("konec",{});
+                this.cleanup();
+            },
+
+            cleanup: function(){
+
+                this.firstPage(true);
+                this.gamePage(false);
+                this.playing(false);
+                this.players([]);
+                this.status("Začnite novo igro ali se pridružite obstoječi.");
+            },
+
+            poteza: function(){
+                console.log(this.naPoteziInt());
+                console.log(this.players().length);
+                if(this.naPoteziInt()  == this.players().length-1){
+                    this.naPoteziInt(0);
+                }
+                else{
+                    this.naPoteziInt(this.naPoteziInt()+1);
+                }
+            },
+
+            trenuten: function(){
+                return this.players()[this.naPoteziInt()];
+            }
+
+        };
+
+        gameViewModel.naPotezi = ko.computed(function(){
+            console.log(this.naPoteziInt());
+            console.log(this.players()[this.naPoteziInt()]);
+            if(this.playing() && this.players()[this.naPoteziInt()].name === this.username && !this.konec()){
+                return true;
+            }
+            return false;
+        }, gameViewModel);
+
+        gameViewModel.jaz = ko.computed(function(){
+            return this.players()[this.jazInt()];
+        },gameViewModel);
+
+        gameViewModel.pripravljen = ko.computed(function(){
+            if(!this.playing()){
+                if(this.jaz() != null && this.jaz().status == "Čaka"){
+                    return false;
+                }
+            }
+            return true;
+        },gameViewModel);
+
+
+
+        function SetStatus(text){
+            $("#status").text(text);
+        }
+
+        function GameCreated(game){
+            gameViewModel.firstPage(false);
+            gameViewModel.gamePage(true);
+            gameViewModel.id(game.gameID);
+            gameViewModel.players(game.players);
+            gameViewModel.status("Počakajte druge, da se povežejo.");
+            gameViewModel.jazInt(game.players.length-1);
+            gameViewModel.uporabljene("");
+        }
+
+        socket.on("disconnect", function(){
+           alert("Povezaja z strežnikom je bila prekinjena.");
+            gameViewModel.cleanup();
+        });
+
+        socket.on("connect_failed",function(){
+           alert("Strežnik ni na voljo");
+            gameViewModel.cleanup();
+        });
+
+        socket.on("players",function(data){
+           gameViewModel.players(data.players);
+        });
+
+        socket.on("error",function(data){
+            alert(data.status);
+        });
+
+        socket.on("vnos",function(data){
+            gameViewModel.status(data.status);
+            gameViewModel.players(data.players);
+
+            if(data.vnos.length==1){
+                gameViewModel.uporabljene(gameViewModel.uporabljene()+data.vnos);
+            }
+            izpisiBesedo(data.beseda);
+
+            if(!data.konec){
+                gameViewModel.poteza();
+            }
+            else{
+                gameViewModel.konec(true);
+                if(gameViewModel.localStorage){
+                localStorage.iger= parseInt(localStorage.iger)+1;
+                    if(gameViewModel.jaz().name==gameViewModel.players()[gameViewModel.naPoteziInt()].name){
+                        localStorage.zmag= parseInt(localStorage.zmag)+1;
+                    }
+                }
+
+            }
+        });
+
+        socket.on("game-created",function(data){
+            console.log("created game");
+            console.log(data);
+            GameCreated(data);
+        });
+
+        socket.on("konec",function(data){
+            alert("eden od igralcev je odstopil, igra je s tem prekinjena.");
+            console.log("konec");
+            gameViewModel.cleanup();
+        });
+
+        socket.on("joined",function(player){
+            console.log("player joined "+player.name);
+            gameViewModel.players.push(player);
+        });
+
+        socket.on("game-started",function(data){
+            gameViewModel.beseda=data.beseda;
+            izpisiBesedo(data.beseda);
+            gameViewModel.playing(true);
+            gameViewModel.status("Nova runda se je pričela.");
+            gameViewModel.naPoteziInt(data.zacne);
+            gameViewModel.konec(false);
+        });
+
+        socket.on("joined-game",function(data){
+            console.log("joined game");
+            console.log(data);
+            GameCreated(data);
+        });
+
+        socket.on("message",function(data){
+            console.log(data);
+        });
+
+        $().ready(function(){
+
+            if(gameViewModel.localStorage){
+                var ime = localStorage.ime;
+                var zmag = localStorage.zmag;
+                var iger = localStorage.iger;
+                var lastPlayed = localStorage.lastPlayed;
+                if(ime!=null){
+                    $("#userName").val(ime);
+                    if(zmag!=null&&iger!=null&&lastPlayed!=null){
+                        gameViewModel.localStats("Zadnja igra: "+lastPlayed+" | Iger: "+iger+" | Zmag: "+zmag);
+                    }
+                    else{
+                        localStorage.iger=0;
+                        localStorage.zmag=0;
+                    }
+                }
+            }
+
+            ko.applyBindings(gameViewModel);
+
+        $("#pridruzi").click(function(){
+            var userName = $("#userName").val();
+            localStorage.ime = userName;
+            gameViewModel.username=userName;
+            localStorage.lastPlayed = new Date().toDateString();
+            var game = $("#idIgre").val();
+            if(userName.length > 3 && game.length>3){
+                socket.emit("join-game",{name:userName,id:game})
+            }
+            else{
+                alert("Izpolnite polja.");
+            }
+        });
+
+        $("#nova-igra").click(function (){
+            var userName = $("#userName").val();
+            localStorage.ime = userName;
+            localStorage.lastPlayed = new Date().toDateString();
+
+            gameViewModel.username=userName;
+            if(userName.length > 3){
+                socket.emit("new-game",{name:userName});
+            }else{
+                alert("Uporabnisko ime naj bo daljse od treh črk.");
+            }
+        });
+        });
+    </script>
+</head>
+<body>
+
+<div id="platno">
+  <h1>Ugani besedo</h1>
+  <div id="navodila">
+    <p>Igro igrata najmanj dva in največ štirje igralci. Cilj igre je ugotoviti,
+    katero besedo oz. besedno zvezo je računalnik izbral. Igralci igrajo v potezah,
+    v vsaki potezi lahko vtipkajo eno črko ali celotno besedo. Za odkrito črko
+    igralec prejme eno točko, za odkrito zadnjo črko (in zmago) tri točke in za
+    odkritje cele besede (z vpisom besede) pet točk. Neglede na uspešnost poteze
+    igro nadaljuje naslednji igralec, razen ob koncu igre.</p>
+    <p>Za začetek igre naj eden od igralcev ustvari novo igro. Ta prejme številko
+      igre, ki jo posreduje ostalim igralcem (ustno, telefonsko, epošte, SMS, IM itd.).
+      Ostali se s pomočjo podane številke pridružijo k igri.</p>
+  </div>
+  <div id="altNavodila">Navodila so dosegljiva <a href="#">tukaj</a>.</div>
+
+  <div id="vsebina">
+    <div id="pPrijava" data-bind="visible: firstPage">
+      <h2>Nova igra</h2>
+      <div>
+        Vpišite ime ali vzdevek:<br />
+        <input type="text" id="userName" value="" />
+      </div>
+
+      <input type="button" id="nova-igra" value="Ustvari novo igro" onClick="" />
+      ali vpiši kodo igre
+      <input type="text" id="idIgre" value="" /> in se
+      <input type="button" id="pridruzi" value="pridruži" />
+      <span id="localStats" data-bind="text: localStats"></span>
+    </div>
+
+    <div id="pIgra" data-bind="visible: gamePage">
+      <h2 id="runda">Nova igra</h2>
+      <div id="pIgralci">
+        <table id="igralci">
+          <tr>
+            <th>Igralec</th>
+            <th>Št. zmag</th>
+            <th>Št. vseh točk</th>
+            <th>Št. točk</th>
+            <th>Začel</th>
+            <th>Status</th>
+          </tr>
+          </tr>
+            <tbody data-bind="foreach: players">
+          <tr ><td data-bind="text: name"></td><td data-bind="text: zmag"></td><td data-bind="text: vsehTock"></td><td data-bind="text: tock"></td><td><div class="krogec" data-bind="visible: $parent.playing() && zacel"></div></td><td data-bind="text: status"></td></tr>
+            </tbody>
+        </table>
+      </div>
+      <div id="pIgraID" data-bind="visible: !playing()">
+        Številka igre<br />
+        <div id="igraID" data-bind="text: id">xxxxxxx-yyyyyy</div>
+        <div id="pPripravi" data-bind="visible: !pripravljen()">
+          Pošljite številko igre ostalim igralcem in počakajte, da se priključijo
+          igri.<br /> Ko so vsi povezani, kliknite
+          <a href="#" data-bind="click: zacni">Začni</a>.
+        </div>
+        <div id="pPripravljen" data-bind="visible: pripravljeni">Vi ste pripravljeni, počakajte še ostale.</div>
+      </div>
+      <div id="pBeseda" data-bind="visible: playing()"></div>
+      <div id="pVnos" data-bind="visible: naPotezi()">
+        Vnesite črko ali celo besedo:<br />
+        <input type="text" id="vnos" value="" />
+        <input type="button" value="Pošlji" data-bind="click: posljiCrko"/><br />
+        <div>Že uporabljene črke: <span id="uporabljeniZnaki" data-bind="text: uporabljene"></span></div>
+      </div>
+      <div id="pVnosOff" data-bind="visible: !naPotezi() && playing() && !konec()">Na potezi je drugi igralec.</div>
+      <div id="pKonec" data-bind="visible: konec() && playing()">
+        Beseda je bila odkrita. Ste pripravljeni za naslednjo rundo?
+        <a href="#" data-bind="click: zacni">Da</a> |
+        <a href="#" data-bind="click: exit">Ne (prekini povezavo)</a>
+      </div>
+    </div>
+    <div id="status" data-bind="text: status"></div>
+  </div>
+</div>
+
+</body>
+</html>

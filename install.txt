@@ -1,0 +1,4 @@
+npm install node-static
+npm install -g socket.io
+npm link socket.io
+node app.js
