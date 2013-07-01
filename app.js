@@ -17,6 +17,7 @@ var server=http.createServer(function  (request, response) {
 console.log("Serving on port:"+process.env.PORT);
 
 var clients = {};
+
 var games = {};
 var besede = fs.readFileSync('besede.txt').toString().split("\n");
 
