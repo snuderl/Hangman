@@ -5,8 +5,10 @@ var fs = require("fs");
 // Create the server. Function passed as parameter is called on every request made.
 // request variable holds all request parameters
 // response variable allows you to do anything with response sent to the client.
-var server=http.createServer(function request (request, response) {
+var server=http.createServer(function  (request, response) {
+    console.log("1");
    request.addListener("end", function(){
+        console.log("1");
       file.serve(request,response);
    });
 // Listen on the 8080 port.
