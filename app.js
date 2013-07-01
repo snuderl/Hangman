@@ -18,7 +18,7 @@ console.log("Serving on port:"+process.env.PORT);
 
 var clients = {};
 var games = {};
-var besede = fs.readFileSync('besede.txt').toString().split("\r\n");
+var besede = fs.readFileSync('besede.txt').toString().split("\n");
 
 function newgame(gameID, creatorID, userName){
     var players = new Array();
