@@ -84,11 +84,11 @@ function createPlayer(name, id,zacel){
 }
 
 var io = require("socket.io").listen(server);
-//io.static.add('index.html', {file: 'static/index.html'});
-// io.configure(function () {
-//   io.set("transports", ["xhr-polling"]);
-//   io.set("polling duration", 10);
-// });
+io.static.add('index.html', {file: 'static/index.html'});
+io.configure(function () {
+  io.set("transports", ["xhr-polling"]);
+  io.set("polling duration", 10);
+});
 io.set('log level', 1);
 io.sockets.on("connection",function (socket){
 
